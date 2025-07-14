@@ -1,0 +1,337 @@
+:root {
+  --primary-color: #2c3e50;
+  --secondary-color: #3498db;
+  --success-color: #27ae60;
+  --danger-color: #e74c3c;
+  --warning-color: #f39c12;
+  --info-color: #17a2b8;
+  --light-color: #f8f9fa;
+  --dark-color: #343a40;
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 70px;
+  --topbar-height: 70px;
+  --border-radius: 12px;
+  --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  color: var(--dark-color);
+  overflow-x: hidden;
+}
+
+.app-wrapper {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+}
+
+.main-content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: var(--transition);
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.main-content {
+  flex: 1;
+  padding-top: var(--topbar-height);
+  min-height: calc(100vh - var(--topbar-height));
+}
+
+.content-container {
+  padding: 2rem;
+  max-width: 100%;
+  animation: fadeIn 0.5s ease-in;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .main-content-wrapper {
+    margin-left: 0 !important;
+  }
+  
+  .content-container {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .content-container {
+    padding: 0.5rem;
+  }
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--secondary-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
+}
+
+/* Bootstrap overrides */
+.btn {
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  padding: 10px 20px;
+  transition: var(--transition);
+  border: none;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--box-shadow);
+}
+
+.card {
+  border: none;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  transition: var(--transition);
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.form-control, .form-select {
+  border-radius: var(--border-radius);
+  border: 2px solid #e9ecef;
+  padding: 12px 16px;
+  transition: var(--transition);
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 0.2rem rgba(52, 144, 220, 0.25);
+}
+
+.table {
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--box-shadow);
+}
+
+.table thead th {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-weight: 600;
+  border: none;
+  padding: 15px;
+}
+
+.table tbody td {
+  padding: 15px;
+  vertical-align: middle;
+  border-color: #f8f9fa;
+}
+
+.table tbody tr:hover {
+  background-color: rgba(102, 126, 234, 0.05);
+}
+
+/* Loading spinner */
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  flex-direction: column;
+}
+
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Alert styles */
+.alert {
+  border: none;
+  border-radius: var(--border-radius);
+  font-weight: 500;
+}
+
+/* Badge styles */
+.badge {
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 6px 12px;
+}
+
+/* Modal styles */
+.modal-content {
+  border: none;
+  border-radius: var(--border-radius);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-bottom: none;
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.modal-footer {
+  border-top: 1px solid #f1f3f4;
+  border-radius: 0 0 var(--border-radius) var(--border-radius);
+}
+
+/* Utility classes */
+.text-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.bg-gradient-success {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+}
+
+.bg-gradient-danger {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%) !important;
+}
+
+.bg-gradient-warning {
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%) !important;
+}
+
+.shadow-custom {
+  box-shadow: var(--box-shadow) !important;
+}
+
+.border-radius-custom {
+  border-radius: var(--border-radius) !important;
+}
+
+/* Print styles */
+@media print {
+  .app-wrapper {
+    display: block;
+  }
+  
+  .main-content-wrapper {
+    margin-left: 0 !important;
+  }
+  
+  .sidebar, .topbar {
+    display: none !important;
+  }
+  
+  .main-content {
+    padding-top: 0;
+  }
+  
+  .content-container {
+    padding: 0;
+  }
+  
+  .btn, .form-control, .form-select {
+    display: none !important;
+  }
+}
+/* Protected Card Styles */
+.protected-card {
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.protected-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.protected-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.05);
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.protected-card:hover::before {
+  opacity: 1;
+}
+
+.protected-card .card-body {
+  position: relative;
+  z-index: 2;
+}
+
+/* Modal Styles */
+.modal-content {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+}
+
+.modal-footer {
+  border-top: 1px solid #f1f3f4;
+  border-radius: 0 0 12px 12px;
+}
+
+/* Admin Badge */
+.badge {
+  font-size: 0.7rem;
+  padding: 4px 8px;
+}
+
+/* Success Alert */
+.alert-success {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  border: none;
+  border-radius: 12px;
+}

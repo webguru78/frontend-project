@@ -1,0 +1,11 @@
+.payment-form {
+  background: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.06);
+}
+
+.payment-form h2 {
+  color: #6610f2;
+  margin-bottom: 20px;
+}

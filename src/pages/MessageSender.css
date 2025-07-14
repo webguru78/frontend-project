@@ -1,0 +1,11 @@
+.message-sender {
+  background: #ffffff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.06);
+}
+
+.message-sender h2 {
+  color: #198754;
+  margin-bottom: 20px;
+}

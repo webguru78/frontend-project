@@ -1,0 +1,11 @@
+.attendance-form {
+  background-color: #ffffff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.06);
+}
+
+.attendance-form h2 {
+  color: #20c997;
+  margin-bottom: 20px;
+}
