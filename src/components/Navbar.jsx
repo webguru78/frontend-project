@@ -8,7 +8,7 @@ const NavigationBar = () => {
       <Container>
         <Navbar.Brand href="/" className="fw-bold">
           <i className="bi bi-lightning-charge-fill me-2"></i>
-          GYM MASTER
+          AM FITNESS
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">

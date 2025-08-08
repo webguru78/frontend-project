@@ -41,7 +41,7 @@ const WhatsAppManager = () => {
 
   const fetchWhatsAppStatus = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/whatsapp/status');
+      const response = await axios.get('https://new-backend-3-yxpd.onrender.com/api/whatsapp/status');
       setWhatsappStatus(response.data);
       
       if (response.data.qrCode && response.data.status === 'qr_code') {
@@ -56,7 +56,7 @@ const WhatsAppManager = () => {
 
   const fetchCustomers = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/customers');
+      const response = await axios.get('https://new-backend-3-yxpd.onrender.com/api/customers');
       setCustomers(response.data);
     } catch (error) {
       showAlert('Failed to fetch customers', 'danger');
@@ -71,7 +71,7 @@ const WhatsAppManager = () => {
   const initializeWhatsApp = async () => {
     setLoading(true);
     try {
-      await axios.post('http://localhost:5000/api/whatsapp/initialize');
+      await axios.post('https://new-backend-3-yxpd.onrender.com/api/whatsapp/initialize');
       showAlert('WhatsApp initialization started. Please scan QR code.', 'info');
       setTimeout(fetchWhatsAppStatus, 2000);
     } catch (error) {
@@ -84,7 +84,7 @@ const WhatsAppManager = () => {
   const disconnectWhatsApp = async () => {
     setLoading(true);
     try {
-      await axios.post('http://localhost:5000/api/whatsapp/disconnect');
+      await axios.post('https://new-backend-3-yxpd.onrender.com/api/whatsapp/disconnect');
       showAlert('WhatsApp disconnected successfully', 'success');
       setWhatsappStatus({ status: 'disconnected', isReady: false, qrCode: null });
     } catch (error) {
@@ -94,35 +94,45 @@ const WhatsAppManager = () => {
     }
   };
 
-  const sendCustomMessage = async () => {
-    if (!selectedCustomer || !customMessage) {
-      showAlert('Please select customer and enter message', 'warning');
+ const sendCustomMessage = async () => {
+  if (!selectedCustomer || !customMessage) {
+    showAlert('Please select customer and enter message', 'warning');
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const customer = customers.find(c => c._id === selectedCustomer);
+    
+    // Client-side validation
+    if (!customer.phone || customer.phone.trim() === '' || customer.phone === '0000') {
+      showAlert(`Customer ${customer.name} does not have a valid phone number`, 'danger');
       return;
     }
 
-    setLoading(true);
-    try {
-      const customer = customers.find(c => c._id === selectedCustomer);
-      await axios.post('http://localhost:5000/api/whatsapp/send-message', {
-        phoneNumber: customer.phone,
-        message: customMessage,
-        customerId: selectedCustomer
-      });
-      
-      showAlert(`Message sent to ${customer.name}`, 'success');
-      setCustomMessage('');
-      setSelectedCustomer('');
-    } catch (error) {
-      showAlert('Failed to send message: ' + (error.response?.data?.error || error.message), 'danger');
-    } finally {
-      setLoading(false);
-    }
-  };
+    await axios.post('https://new-backend-3-yxpd.onrender.com/api/whatsapp/send-message', {
+      phoneNumber: customer.phone,
+      message: customMessage,
+      customerId: selectedCustomer
+    });
+    
+    showAlert(`Message sent to ${customer.name}`, 'success');
+    setCustomMessage('');
+    setSelectedCustomer('');
+  } catch (error) {
+    const errorMessage = error.response?.data?.error || error.message;
+    showAlert(`Failed to send message: ${errorMessage}`, 'danger');
+    console.error('Send message error:', error.response?.data);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const sendWelcomeMessage = async (customerId) => {
     setLoading(true);
     try {
-      await axios.post('http://localhost:5000/api/whatsapp/send-welcome', {
+      await axios.post('https://new-backend-3-yxpd.onrender.com/api/whatsapp/send-welcome', {
         customerId
       });
       showAlert('Welcome message sent successfully', 'success');
@@ -136,7 +146,7 @@ const WhatsAppManager = () => {
   const sendFeeReminder = async (customerId) => {
     setLoading(true);
     try {
-      await axios.post('http://localhost:5000/api/whatsapp/send-fee-reminder', {
+      await axios.post('https://new-backend-3-yxpd.onrender.com/api/whatsapp/send-fee-reminder', {
         customerId
       });
       showAlert('Fee reminder sent successfully', 'success');
@@ -150,7 +160,7 @@ const WhatsAppManager = () => {
   const triggerAllFeeReminders = async () => {
     setLoading(true);
     try {
-      await axios.post('http://localhost:5000/api/whatsapp/trigger-fee-reminders');
+      await axios.post('https://new-backend-3-yxpd.onrender.com/api/whatsapp/trigger-fee-reminders');
       showAlert('Fee reminders triggered for all pending customers', 'success');
     } catch (error) {
       showAlert('Failed to trigger fee reminders', 'danger');
@@ -162,7 +172,7 @@ const WhatsAppManager = () => {
   const triggerExpiryReminders = async () => {
     setLoading(true);
     try {
-      await axios.post('http://localhost:5000/api/whatsapp/trigger-expiry-reminders');
+      await axios.post('https://new-backend-3-yxpd.onrender.com/api/whatsapp/trigger-expiry-reminders');
       showAlert('Expiry reminders triggered for expiring customers', 'success');
     } catch (error) {
       showAlert('Failed to trigger expiry reminders', 'danger');

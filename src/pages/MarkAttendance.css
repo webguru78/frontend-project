@@ -367,3 +367,343 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #5a67d8;
 }
+/* Add these styles to your existing MarkAttendance.css */
+
+.member-avatar-large {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto;
+}
+
+.member-avatar-large img,
+.avatar-placeholder-large {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.avatar-placeholder-large {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 2rem;
+}
+
+.renewal-summary {
+  background: rgba(25, 135, 84, 0.1);
+  border: 1px solid rgba(25, 135, 84, 0.2);
+  border-radius: 0.375rem;
+  padding: 1rem;
+}
+
+.summary-item {
+  margin-bottom: 0.5rem;
+}
+
+.summary-item label {
+  display: block;
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+}
+
+.action-buttons .btn {
+  transition: all 0.2s ease;
+}
+
+.action-buttons .btn:hover {
+  transform: translateY(-1px);
+}
+
+.member-card.expired {
+  opacity: 0.8;
+  border: 2px solid #dc3545;
+}
+
+.member-card.expired .card-body {
+  background: rgba(220, 53, 69, 0.05);
+}
+.attendance-container {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  padding: 20px 0;
+}
+
+.header-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.stats-mini {
+  display: flex;
+  gap: 30px;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-number {
+  display: block;
+  font-size: 2rem;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.875rem;
+  opacity: 0.9;
+  margin-top: 5px;
+}
+
+.member-card {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.member-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+
+.member-card.expired {
+  border-left: 5px solid #dc3545;
+  opacity: 0.9;
+}
+
+.member-card.shortlisted {
+  border-left: 5px solid #0dcaf0;
+  background: linear-gradient(135deg, #e3f2fd 0%, #f1f8e9 100%);
+}
+
+.member-avatar {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.member-avatar img, .avatar-placeholder {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  border-radius: 50%;
+}
+
+.member-avatar-small {
+  width: 40px;
+  height: 40px;
+}
+
+.member-avatar-small img, .avatar-placeholder-small {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+}
+
+.avatar-placeholder-small {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  border-radius: 50%;
+}
+
+.member-avatar-large {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto;
+}
+
+.member-avatar-large img, .avatar-placeholder-large {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+}
+
+.avatar-placeholder-large {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  border-radius: 50%;
+}
+
+.badges-container {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.member-details {
+  margin: 20px 0;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.detail-item i {
+  width: 16px;
+  flex-shrink: 0;
+}
+
+.payment-progress {
+  margin: 15px 0;
+}
+
+.action-buttons {
+  margin-top: 20px;
+}
+
+.summary-item {
+  text-align: center;
+  padding: 10px;
+}
+
+.summary-item label {
+  display: block;
+  font-size: 0.875rem;
+  margin-bottom: 5px;
+}
+
+.payment-summary {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+/* Pagination Styles */
+.pagination {
+  margin: 0;
+}
+
+.pagination .page-link {
+  border-radius: 8px;
+  margin: 0 2px;
+  border: 1px solid #dee2e6;
+  color: #495057;
+}
+
+.pagination .page-link:hover {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.pagination .page-item.active .page-link {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+}
+
+/* Filter Buttons */
+.btn-outline-primary:hover,
+.btn-outline-success:hover,
+.btn-outline-warning:hover,
+.btn-outline-info:hover,
+.btn-outline-danger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .stats-mini {
+    gap: 15px;
+  }
+  
+  .stat-number {
+    font-size: 1.5rem;
+  }
+  
+  .member-card {
+    margin-bottom: 20px;
+  }
+  
+  .badges-container {
+    margin: 10px 0;
+  }
+  
+  .detail-item {
+    font-size: 0.85rem;
+  }
+}
+
+/* Animation for status changes */
+@keyframes statusChange {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.member-card.shortlisted .badges-container {
+  animation: statusChange 2s ease-in-out;
+}
+
+/* Loading states */
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Table hover effects */
+.table-hover tbody tr:hover {
+  background-color: rgba(0,0,0,0.02);
+}
+
+/* Modal enhancements */
+.modal-header {
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.modal-content {
+  border-radius: 0.5rem;
+  border: none;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+/* Custom alert styles */
+.alert {
+  border-radius: 10px;
+  border: none;
+}
+
+.alert-info {
+  background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+}
+
+.alert-success {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+}
+
+.alert-warning {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+}
+
+.alert-danger {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+}

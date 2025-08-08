@@ -81,7 +81,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
         <div className="sidebar-header">
           <div className="logo">
             <i className="bi bi-lightning-charge-fill"></i>
-            {!collapsed && <span>GYM MASTER</span>}
+            {!collapsed && <span>AM FITNESS</span>}
           </div>
         </div>
 
@@ -118,7 +118,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
         {!collapsed && (
           <div className="sidebar-footer">
             <div className="footer-content">
-              <small className="text-muted">© 2024 Gym Master</small>
+              <small className="text-muted">© 2024 AM FITNESS</small>
             </div>
           </div>
         )}

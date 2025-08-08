@@ -33,7 +33,7 @@ const PaymentForm = () => {
 
   const fetchCustomers = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/customers');
+      const response = await axios.get('https://new-backend-3-yxpd.onrender.com/api/customers');
       // Filter customers with pending payments
       const pendingCustomers = response.data.filter(customer => customer.remaining > 0);
       setCustomers(pendingCustomers);
@@ -44,7 +44,7 @@ const PaymentForm = () => {
 
   const fetchRecentPayments = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/payments/recent');
+      const response = await axios.get('https://new-backend-3-yxpd.onrender.com/api/payments/recent');
       setRecentPayments(response.data || []);
     } catch (error) {
       console.error('Error fetching recent payments:', error);
@@ -88,7 +88,7 @@ const PaymentForm = () => {
     setShowConfirmModal(false);
 
     try {
-      await axios.put(`http://localhost:5000/api/customers/${selectedCustomer}/payment`, {
+      await axios.put(`https://new-backend-3-yxpd.onrender.com/api/customers/${selectedCustomer}/payment`, {
         amount: parseFloat(paymentAmount),
         method: paymentMethod,
         description
