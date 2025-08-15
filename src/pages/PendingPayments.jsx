@@ -47,7 +47,7 @@ const PendingPayments = () => {
   const fetchPendingPayments = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('https://backend-deploy-xevv.vercel.app/api/customers');
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/customers`);
       const allCustomers = response.data;
       
       // Filter customers with pending payments
@@ -147,7 +147,7 @@ const PendingPayments = () => {
 
     setLoading(true);
     try {
-      await axios.put(`https://backend-deploy-xevv.vercel.app/api/customers/${selectedCustomer._id}/payment`, {
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/customers/${selectedCustomer._id}/payment`, {
         amount: parseFloat(paymentAmount)
       });
       
@@ -166,7 +166,7 @@ const PendingPayments = () => {
 
   const sendReminder = async (customer) => {
     try {
-      await axios.post(`https://backend-deploy-xevv.vercel.app/api/customers/${customer._id}/reminder`);
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/customers/${customer._id}/reminder`);
       showAlert(`Reminder sent to ${customer.name}`, 'success');
     } catch (error) {
       showAlert('Failed to send reminder', 'danger');
@@ -387,7 +387,7 @@ const PendingPayments = () => {
                             <div className="member-avatar-small me-3">
                               {customer.image ? (
                                 <img
-                                  src={`https://backend-deploy-xevv.vercel.app/uploads/${customer.image}`}
+                                  src={`${import.meta.env.VITE_API_URL}/uploads/${customer.image}`}
                                   alt={customer.name}
                                   className="rounded-circle"
                                 />
@@ -492,7 +492,7 @@ const PendingPayments = () => {
                   <div className="member-avatar-large">
                     {selectedCustomer.image ? (
                       <img
-                        src={`https://backend-deploy-xevv.vercel.app/uploads/${selectedCustomer.image}`}
+                        src={`${import.meta.env.VITE_API_URL}/uploads/${selectedCustomer.image}`}
                         alt={selectedCustomer.name}
                         className="rounded-circle"
                       />

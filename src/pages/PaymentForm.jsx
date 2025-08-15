@@ -33,7 +33,7 @@ const PaymentForm = () => {
 
   const fetchCustomers = async () => {
     try {
-      const response = await axios.get('https://backend-deploy-xevv.vercel.app/api/customers');
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/customers`);
       // Filter customers with pending payments
       const pendingCustomers = response.data.filter(customer => customer.remaining > 0);
       setCustomers(pendingCustomers);
@@ -44,7 +44,7 @@ const PaymentForm = () => {
 
   const fetchRecentPayments = async () => {
     try {
-      const response = await axios.get('https://backend-deploy-xevv.vercel.app/api/payments/recent');
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/payments/recent`);
       setRecentPayments(response.data || []);
     } catch (error) {
       console.error('Error fetching recent payments:', error);
@@ -88,7 +88,7 @@ const PaymentForm = () => {
     setShowConfirmModal(false);
 
     try {
-      await axios.put(`https://backend-deploy-xevv.vercel.app/api/customers/${selectedCustomer}/payment`, {
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/customers/${selectedCustomer}/payment`, {
         amount: parseFloat(paymentAmount),
         method: paymentMethod,
         description

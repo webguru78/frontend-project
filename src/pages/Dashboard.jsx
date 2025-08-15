@@ -39,8 +39,8 @@ const Dashboard = () => {
     try {
       setLoading(true);
       const [customersRes, attendanceRes] = await Promise.all([
-        axios.get('https://backend-deploy-xevv.vercel.app/api/customers'),
-        axios.get('https://backend-deploy-xevv.vercel.app/api/attendance')
+        axios.get(`${import.meta.env.VITE_API_URL}/api/customers`),
+        axios.get(`${import.meta.env.VITE_API_URL}/api/attendance`)
       ]);
 
       const customers = customersRes.data;
