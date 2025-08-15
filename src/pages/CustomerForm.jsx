@@ -156,7 +156,7 @@ const CustomerForm = () => {
 
   const checkRollNumberExists = async (rollNum) => {
     try {
-      const response = await axios.get(`https://amfitness.fun/api/customers/check-roll/${rollNum}`);
+      const response = await axios.get(`https://backend-deploy-xevv.vercel.app/api/customers/check-roll/${rollNum}`);
       return response.data.exists;
     } catch (error) {
       console.error('Error checking roll number:', error);
@@ -287,7 +287,7 @@ const CustomerForm = () => {
       }
 
       // Try to submit to server
-      const response = await axios.post('https://amfitness.fun/api/customers', submitData, {
+      const response = await axios.post('https://backend-deploy-xevv.vercel.app/api/customers', submitData, {
         timeout: 10000, // 10 second timeout
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -346,7 +346,7 @@ const CustomerForm = () => {
   const testServerConnection = async () => {
     try {
       setLoading(true);
-      await axios.get('https://amfitness.fun/api/health', { timeout: 5000 });
+      await axios.get('https://backend-deploy-xevv.vercel.app/api/health', { timeout: 5000 });
       showAlert('Server connection successful!', 'success');
     } catch (error) {
       showAlert('Server connection failed. Please check if the server is running.', 'danger');

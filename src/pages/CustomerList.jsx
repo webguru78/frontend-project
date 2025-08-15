@@ -40,7 +40,7 @@ const CustomerList = () => {
   const fetchCustomers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('https://amfitness.fun/api/customers');
+      const response = await axios.get('https://backend-deploy-xevv.vercel.app/api/customers');
       setCustomers(response.data);
     } catch (error) {
       console.error('Error fetching customers:', error);
@@ -54,7 +54,7 @@ const CustomerList = () => {
     e.stopPropagation();
     if (window.confirm('Are you sure you want to delete this member?')) {
       try {
-        const response = await axios.delete(`https://amfitness.fun/api/customers/${customerId}`);
+        const response = await axios.delete(`https://backend-deploy-xevv.vercel.app/api/customers/${customerId}`);
         if (response.status === 200) {
           setCustomers(customers.filter((customer) => customer._id !== customerId));
           
@@ -139,7 +139,7 @@ const CustomerList = () => {
       }
 
       const response = await axios.put(
-        `https://amfitness.fun/api/customers/${editingCustomer._id}`,
+        `https://backend-deploy-xevv.vercel.app/api/customers/${editingCustomer._id}`,
         formData,
         {
           headers: {
@@ -221,9 +221,9 @@ const CustomerList = () => {
     if (imagePath.startsWith('http')) {
       return imagePath; // Full URL
     } else if (imagePath.startsWith('uploads/')) {
-      return `https://amfitness.fun/${imagePath}`; // Path with uploads/
+      return `https://backend-deploy-xevv.vercel.app/${imagePath}`; // Path with uploads/
     } else {
-      return `https://amfitness.fun/uploads/${imagePath}`; // Just filename
+      return `https://backend-deploy-xevv.vercel.app/uploads/${imagePath}`; // Just filename
     }
   };
 

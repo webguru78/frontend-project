@@ -54,7 +54,7 @@ const WhatsAppManager = () => {
 
   const fetchWhatsAppStatus = async () => {
     try {
-      const response = await axios.get('https://amfitness.fun/api/whatsapp/status');
+      const response = await axios.get('https://backend-deploy-xevv.vercel.app/api/whatsapp/status');
       setWhatsappStatus(response.data);
       
       // Show QR modal if QR code is available
@@ -70,7 +70,7 @@ const WhatsAppManager = () => {
 
   const fetchCustomers = async () => {
     try {
-      const response = await axios.get('https://amfitness.fun/api/customers');
+      const response = await axios.get('https://backend-deploy-xevv.vercel.app/api/customers');
       setCustomers(response.data);
     } catch (error) {
       showAlert('Failed to fetch customers', 'danger');
@@ -85,7 +85,7 @@ const WhatsAppManager = () => {
   const initializeWhatsAppWeb = async () => {
     setLoading(true);
     try {
-      await axios.post('https://amfitness.fun/api/whatsapp/init-whatsapp-web');
+      await axios.post('https://backend-deploy-xevv.vercel.app/api/whatsapp/init-whatsapp-web');
       showAlert('WhatsApp Web initialization started. Please scan the QR code when it appears.', 'info');
       setTimeout(fetchWhatsAppStatus, 2000);
     } catch (error) {
@@ -103,7 +103,7 @@ const WhatsAppManager = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post('https://amfitness.fun/api/whatsapp/request-whatsapp-verification', {
+      const response = await axios.post('https://backend-deploy-xevv.vercel.app/api/whatsapp/request-whatsapp-verification', {
         phoneNumber: phoneNumber
       });
       
@@ -125,7 +125,7 @@ const WhatsAppManager = () => {
 
     setLoading(true);
     try {
-      await axios.post('https://amfitness.fun/api/whatsapp/verify-whatsapp-code', {
+      await axios.post('https://backend-deploy-xevv.vercel.app/api/whatsapp/verify-whatsapp-code', {
         phoneNumber: phoneNumber,
         verificationCode: verificationCode
       });
@@ -158,7 +158,7 @@ const WhatsAppManager = () => {
         return;
       }
 
-      const response = await axios.post('https://amfitness.fun/api/whatsapp/send-message', {
+      const response = await axios.post('https://backend-deploy-xevv.vercel.app/api/whatsapp/send-message', {
         phoneNumber: customer.phone,
         message: customMessage,
         customerId: selectedCustomer
@@ -178,7 +178,7 @@ const WhatsAppManager = () => {
   const sendWelcomeMessage = async (customerId) => {
     setLoading(true);
     try {
-      await axios.post('https://amfitness.fun/api/whatsapp/send-welcome', {
+      await axios.post('https://backend-deploy-xevv.vercel.app/api/whatsapp/send-welcome', {
         customerId
       });
       showAlert('Welcome message sent successfully via WhatsApp', 'success');
@@ -192,7 +192,7 @@ const WhatsAppManager = () => {
   const sendFeeReminder = async (customerId) => {
     setLoading(true);
     try {
-      await axios.post('https://amfitness.fun/api/whatsapp/send-fee-reminder', {
+      await axios.post('https://backend-deploy-xevv.vercel.app/api/whatsapp/send-fee-reminder', {
         customerId
       });
       showAlert('Fee reminder sent successfully via WhatsApp', 'success');
@@ -206,7 +206,7 @@ const WhatsAppManager = () => {
   const triggerAllFeeReminders = async () => {
     setLoading(true);
     try {
-      const response = await axios.post('https://amfitness.fun/api/whatsapp/trigger-fee-reminders');
+      const response = await axios.post('https://backend-deploy-xevv.vercel.app/api/whatsapp/trigger-fee-reminders');
       showAlert(`Fee reminders sent via WhatsApp! ${response.data.stats.sent} sent, ${response.data.stats.failed} failed`, 'success');
     } catch (error) {
       showAlert('Failed to trigger fee reminders: ' + (error.response?.data?.error || error.message), 'danger');
@@ -218,7 +218,7 @@ const WhatsAppManager = () => {
   const disconnectWhatsApp = async () => {
     setLoading(true);
     try {
-      await axios.post('https://amfitness.fun/api/whatsapp/disconnect');
+      await axios.post('https://backend-deploy-xevv.vercel.app/api/whatsapp/disconnect');
       showAlert('WhatsApp disconnected successfully', 'success');
       setWhatsappStatus({ status: 'disconnected', isReady: false, method: 'none', qrCode: null });
       setShowQRModal(false);
