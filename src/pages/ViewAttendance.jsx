@@ -43,8 +43,8 @@ const ViewAttendance = () => {
     setLoading(true);
     try {
       const [attendanceRes, customersRes] = await Promise.all([
-        axios.get("https://new-backend-3-yxpd.onrender.com/api/attendance"),
-        axios.get("https://new-backend-3-yxpd.onrender.com/api/customers")
+        axios.get("https://amfitness.fun/api/attendance"),
+        axios.get("https://amfitness.fun/api/customers")
       ]);
       
       setAttendance(attendanceRes.data);
@@ -90,9 +90,9 @@ const ViewAttendance = () => {
     if (imagePath.startsWith('http')) {
       return imagePath; // Full URL
     } else if (imagePath.startsWith('uploads/')) {
-      return `https://new-backend-3-yxpd.onrender.com/${imagePath}`; // Path with uploads/
+      return `https://amfitness.fun/${imagePath}`; // Path with uploads/
     } else {
-      return `https://new-backend-3-yxpd.onrender.com/uploads/${imagePath}`; // Just filename
+      return `https://amfitness.fun/uploads/${imagePath}`; // Just filename
     }
   };
 
@@ -170,7 +170,7 @@ const ViewAttendance = () => {
         const worksheet = workbook.Sheets[workbook.SheetNames[0]];
         const importedData = XLSX.utils.sheet_to_json(worksheet);
 
-        await axios.post("https://new-backend-3-yxpd.onrender.com/api/attendance/import", {
+        await axios.post("https://amfitness.fun/api/attendance/import", {
         });
         
         showAlert("Data imported successfully!", "success");

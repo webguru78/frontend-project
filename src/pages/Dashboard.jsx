@@ -39,8 +39,8 @@ const Dashboard = () => {
     try {
       setLoading(true);
       const [customersRes, attendanceRes] = await Promise.all([
-        axios.get('https://new-backend-3-yxpd.onrender.com/api/customers'),
-        axios.get('https://new-backend-3-yxpd.onrender.com/api/attendance')
+        axios.get('https://amfitness.fun/api/customers'),
+        axios.get('https://amfitness.fun/api/attendance')
       ]);
 
       const customers = customersRes.data;

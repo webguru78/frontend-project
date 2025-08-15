@@ -40,7 +40,7 @@ const CustomerList = () => {
   const fetchCustomers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('https://new-backend-3-yxpd.onrender.com/api/customers');
+      const response = await axios.get('https://amfitness.fun/api/customers');
       setCustomers(response.data);
     } catch (error) {
       console.error('Error fetching customers:', error);
@@ -54,7 +54,7 @@ const CustomerList = () => {
     e.stopPropagation();
     if (window.confirm('Are you sure you want to delete this member?')) {
       try {
-        const response = await axios.delete(`https://new-backend-3-yxpd.onrender.com/api/customers/${customerId}`);
+        const response = await axios.delete(`https://amfitness.fun/api/customers/${customerId}`);
         if (response.status === 200) {
           setCustomers(customers.filter((customer) => customer._id !== customerId));
           
@@ -139,7 +139,7 @@ const CustomerList = () => {
       }
 
       const response = await axios.put(
-        `https://new-backend-3-yxpd.onrender.com/api/customers/${editingCustomer._id}`,
+        `https://amfitness.fun/api/customers/${editingCustomer._id}`,
         formData,
         {
           headers: {
@@ -221,9 +221,9 @@ const CustomerList = () => {
     if (imagePath.startsWith('http')) {
       return imagePath; // Full URL
     } else if (imagePath.startsWith('uploads/')) {
-      return `https://new-backend-3-yxpd.onrender.com/${imagePath}`; // Path with uploads/
+      return `https://amfitness.fun/${imagePath}`; // Path with uploads/
     } else {
-      return `https://new-backend-3-yxpd.onrender.com/uploads/${imagePath}`; // Just filename
+      return `https://amfitness.fun/uploads/${imagePath}`; // Just filename
     }
   };
 

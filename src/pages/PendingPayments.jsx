@@ -47,7 +47,7 @@ const PendingPayments = () => {
   const fetchPendingPayments = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('https://new-backend-3-yxpd.onrender.com/api/customers');
+      const response = await axios.get('https://amfitness.fun/api/customers');
       const allCustomers = response.data;
       
       // Filter customers with pending payments
@@ -147,7 +147,7 @@ const PendingPayments = () => {
 
     setLoading(true);
     try {
-      await axios.put(`https://new-backend-3-yxpd.onrender.com/api/customers/${selectedCustomer._id}/payment`, {
+      await axios.put(`https://amfitness.fun/api/customers/${selectedCustomer._id}/payment`, {
         amount: parseFloat(paymentAmount)
       });
       
@@ -166,7 +166,7 @@ const PendingPayments = () => {
 
   const sendReminder = async (customer) => {
     try {
-      await axios.post(`https://new-backend-3-yxpd.onrender.com/api/customers/${customer._id}/reminder`);
+      await axios.post(`https://amfitness.fun/api/customers/${customer._id}/reminder`);
       showAlert(`Reminder sent to ${customer.name}`, 'success');
     } catch (error) {
       showAlert('Failed to send reminder', 'danger');
@@ -387,7 +387,7 @@ const PendingPayments = () => {
                             <div className="member-avatar-small me-3">
                               {customer.image ? (
                                 <img
-                                  src={`https://new-backend-3-yxpd.onrender.com/uploads/${customer.image}`}
+                                  src={`https://amfitness.fun/uploads/${customer.image}`}
                                   alt={customer.name}
                                   className="rounded-circle"
                                 />
@@ -492,7 +492,7 @@ const PendingPayments = () => {
                   <div className="member-avatar-large">
                     {selectedCustomer.image ? (
                       <img
-                        src={`https://new-backend-3-yxpd.onrender.com/uploads/${selectedCustomer.image}`}
+                        src={`https://amfitness.fun/uploads/${selectedCustomer.image}`}
                         alt={selectedCustomer.name}
                         className="rounded-circle"
                       />

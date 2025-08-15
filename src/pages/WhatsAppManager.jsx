@@ -12,7 +12,8 @@ import {
   Modal,
   Spinner,
   Tabs,
-  Tab
+  Tab,
+  InputGroup
 } from 'react-bootstrap';
 import axios from 'axios';
 
@@ -20,6 +21,8 @@ const WhatsAppManager = () => {
   const [whatsappStatus, setWhatsappStatus] = useState({
     status: 'disconnected',
     isReady: false,
+    method: 'none',
+    provider: 'none',
     qrCode: null
   });
   const [loading, setLoading] = useState(false);
@@ -27,24 +30,35 @@ const WhatsAppManager = () => {
   const [customers, setCustomers] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState('');
   const [customMessage, setCustomMessage] = useState('');
+  const [activeTab, setActiveTab] = useState('setup');
   const [showQRModal, setShowQRModal] = useState(false);
-  const [activeTab, setActiveTab] = useState('status');
+  
+  // WhatsApp Verification
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [verificationStep, setVerificationStep] = useState('phone'); // 'phone' or 'code'
 
   useEffect(() => {
     fetchWhatsAppStatus();
     fetchCustomers();
     
-    // Poll status every 5 seconds
-    const interval = setInterval(fetchWhatsAppStatus, 5000);
+    // Poll status every 3 seconds when not ready
+    const interval = setInterval(() => {
+      if (!whatsappStatus.isReady) {
+        fetchWhatsAppStatus();
+      }
+    }, 3000);
+    
     return () => clearInterval(interval);
-  }, []);
+  }, [whatsappStatus.isReady]);
 
   const fetchWhatsAppStatus = async () => {
     try {
-      const response = await axios.get('https://new-backend-3-yxpd.onrender.com/api/whatsapp/status');
+      const response = await axios.get('https://amfitness.fun/api/whatsapp/status');
       setWhatsappStatus(response.data);
       
-      if (response.data.qrCode && response.data.status === 'qr_code') {
+      // Show QR modal if QR code is available
+      if (response.data.qrCode && response.data.status === 'qr_ready') {
         setShowQRModal(true);
       } else if (response.data.status === 'connected') {
         setShowQRModal(false);
@@ -56,7 +70,7 @@ const WhatsAppManager = () => {
 
   const fetchCustomers = async () => {
     try {
-      const response = await axios.get('https://new-backend-3-yxpd.onrender.com/api/customers');
+      const response = await axios.get('https://amfitness.fun/api/customers');
       setCustomers(response.data);
     } catch (error) {
       showAlert('Failed to fetch customers', 'danger');
@@ -68,76 +82,108 @@ const WhatsAppManager = () => {
     setTimeout(() => setAlert({ show: false, message: '', variant: '' }), 5000);
   };
 
-  const initializeWhatsApp = async () => {
+  const initializeWhatsAppWeb = async () => {
     setLoading(true);
     try {
-      await axios.post('https://new-backend-3-yxpd.onrender.com/api/whatsapp/initialize');
-      showAlert('WhatsApp initialization started. Please scan QR code.', 'info');
+      await axios.post('https://amfitness.fun/api/whatsapp/init-whatsapp-web');
+      showAlert('WhatsApp Web initialization started. Please scan the QR code when it appears.', 'info');
       setTimeout(fetchWhatsAppStatus, 2000);
     } catch (error) {
-      showAlert('Failed to initialize WhatsApp', 'danger');
+      showAlert('Failed to initialize WhatsApp Web: ' + (error.response?.data?.error || error.message), 'danger');
     } finally {
       setLoading(false);
     }
   };
 
-  const disconnectWhatsApp = async () => {
-    setLoading(true);
-    try {
-      await axios.post('https://new-backend-3-yxpd.onrender.com/api/whatsapp/disconnect');
-      showAlert('WhatsApp disconnected successfully', 'success');
-      setWhatsappStatus({ status: 'disconnected', isReady: false, qrCode: null });
-    } catch (error) {
-      showAlert('Failed to disconnect WhatsApp', 'danger');
-    } finally {
-      setLoading(false);
-    }
-  };
-
- const sendCustomMessage = async () => {
-  if (!selectedCustomer || !customMessage) {
-    showAlert('Please select customer and enter message', 'warning');
-    return;
-  }
-
-  setLoading(true);
-  try {
-    const customer = customers.find(c => c._id === selectedCustomer);
-    
-    // Client-side validation
-    if (!customer.phone || customer.phone.trim() === '' || customer.phone === '0000') {
-      showAlert(`Customer ${customer.name} does not have a valid phone number`, 'danger');
+  const requestWhatsAppVerification = async () => {
+    if (!phoneNumber) {
+      showAlert('Please enter your phone number', 'warning');
       return;
     }
 
-    await axios.post('https://new-backend-3-yxpd.onrender.com/api/whatsapp/send-message', {
-      phoneNumber: customer.phone,
-      message: customMessage,
-      customerId: selectedCustomer
-    });
-    
-    showAlert(`Message sent to ${customer.name}`, 'success');
-    setCustomMessage('');
-    setSelectedCustomer('');
-  } catch (error) {
-    const errorMessage = error.response?.data?.error || error.message;
-    showAlert(`Failed to send message: ${errorMessage}`, 'danger');
-    console.error('Send message error:', error.response?.data);
-  } finally {
-    setLoading(false);
-  }
-};
+    setLoading(true);
+    try {
+      const response = await axios.post('https://amfitness.fun/api/whatsapp/request-whatsapp-verification', {
+        phoneNumber: phoneNumber
+      });
+      
+      showAlert(response.data.message + (response.data.devMessage ? '\n' + response.data.devMessage : ''), 'success');
+      setVerificationStep('code');
+      
+    } catch (error) {
+      showAlert('Failed to send verification code: ' + (error.response?.data?.error || error.message), 'danger');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const verifyWhatsAppCode = async () => {
+    if (!verificationCode) {
+      showAlert('Please enter the verification code', 'warning');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await axios.post('https://amfitness.fun/api/whatsapp/verify-whatsapp-code', {
+        phoneNumber: phoneNumber,
+        verificationCode: verificationCode
+      });
+      
+      showAlert('Phone number verified successfully! You can now send WhatsApp messages.', 'success');
+      setVerificationStep('phone');
+      setPhoneNumber('');
+      setVerificationCode('');
+      fetchWhatsAppStatus();
+      
+    } catch (error) {
+      showAlert('Verification failed: ' + (error.response?.data?.error || error.message), 'danger');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sendCustomMessage = async () => {
+    if (!selectedCustomer || !customMessage) {
+      showAlert('Please select customer and enter message', 'warning');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const customer = customers.find(c => c._id === selectedCustomer);
+      
+      if (!customer.phone || customer.phone.trim() === '') {
+        showAlert(`Customer ${customer.name} does not have a valid phone number`, 'danger');
+        return;
+      }
+
+      const response = await axios.post('https://amfitness.fun/api/whatsapp/send-message', {
+        phoneNumber: customer.phone,
+        message: customMessage,
+        customerId: selectedCustomer
+      });
+      
+      showAlert(`Message sent to ${customer.name} via WhatsApp`, 'success');
+      setCustomMessage('');
+      setSelectedCustomer('');
+    } catch (error) {
+      const errorMessage = error.response?.data?.error || error.message;
+      showAlert(`Failed to send message: ${errorMessage}`, 'danger');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const sendWelcomeMessage = async (customerId) => {
     setLoading(true);
     try {
-      await axios.post('https://new-backend-3-yxpd.onrender.com/api/whatsapp/send-welcome', {
+      await axios.post('https://amfitness.fun/api/whatsapp/send-welcome', {
         customerId
       });
-      showAlert('Welcome message sent successfully', 'success');
+      showAlert('Welcome message sent successfully via WhatsApp', 'success');
     } catch (error) {
-      showAlert('Failed to send welcome message', 'danger');
+      showAlert('Failed to send welcome message: ' + (error.response?.data?.error || error.message), 'danger');
     } finally {
       setLoading(false);
     }
@@ -146,12 +192,12 @@ const WhatsAppManager = () => {
   const sendFeeReminder = async (customerId) => {
     setLoading(true);
     try {
-      await axios.post('https://new-backend-3-yxpd.onrender.com/api/whatsapp/send-fee-reminder', {
+      await axios.post('https://amfitness.fun/api/whatsapp/send-fee-reminder', {
         customerId
       });
-      showAlert('Fee reminder sent successfully', 'success');
+      showAlert('Fee reminder sent successfully via WhatsApp', 'success');
     } catch (error) {
-      showAlert('Failed to send fee reminder', 'danger');
+      showAlert('Failed to send fee reminder: ' + (error.response?.data?.error || error.message), 'danger');
     } finally {
       setLoading(false);
     }
@@ -160,22 +206,24 @@ const WhatsAppManager = () => {
   const triggerAllFeeReminders = async () => {
     setLoading(true);
     try {
-      await axios.post('https://new-backend-3-yxpd.onrender.com/api/whatsapp/trigger-fee-reminders');
-      showAlert('Fee reminders triggered for all pending customers', 'success');
+      const response = await axios.post('https://amfitness.fun/api/whatsapp/trigger-fee-reminders');
+      showAlert(`Fee reminders sent via WhatsApp! ${response.data.stats.sent} sent, ${response.data.stats.failed} failed`, 'success');
     } catch (error) {
-      showAlert('Failed to trigger fee reminders', 'danger');
+      showAlert('Failed to trigger fee reminders: ' + (error.response?.data?.error || error.message), 'danger');
     } finally {
       setLoading(false);
     }
   };
 
-  const triggerExpiryReminders = async () => {
+  const disconnectWhatsApp = async () => {
     setLoading(true);
     try {
-      await axios.post('https://new-backend-3-yxpd.onrender.com/api/whatsapp/trigger-expiry-reminders');
-      showAlert('Expiry reminders triggered for expiring customers', 'success');
+      await axios.post('https://amfitness.fun/api/whatsapp/disconnect');
+      showAlert('WhatsApp disconnected successfully', 'success');
+      setWhatsappStatus({ status: 'disconnected', isReady: false, method: 'none', qrCode: null });
+      setShowQRModal(false);
     } catch (error) {
-      showAlert('Failed to trigger expiry reminders', 'danger');
+      showAlert('Failed to disconnect WhatsApp', 'danger');
     } finally {
       setLoading(false);
     }
@@ -185,19 +233,19 @@ const WhatsAppManager = () => {
     const variants = {
       'connected': 'success',
       'disconnected': 'danger',
-      'qr_code': 'warning',
+      'qr_ready': 'warning',
+      'initializing': 'info',
       'authenticated': 'info',
-      'auth_failed': 'danger',
-      'error': 'danger'
+      'auth_failure': 'danger'
     };
     
     const labels = {
-      'connected': 'Connected',
+      'connected': 'Connected & Ready',
       'disconnected': 'Disconnected',
-      'qr_code': 'Scan QR Code',
+      'qr_ready': 'QR Code Ready - Scan Now',
+      'initializing': 'Starting Up...',
       'authenticated': 'Authenticated',
-      'auth_failed': 'Auth Failed',
-      'error': 'Error'
+      'auth_failure': 'Authentication Failed'
     };
 
     return <Badge bg={variants[status] || 'secondary'}>{labels[status] || status}</Badge>;
@@ -215,42 +263,57 @@ const WhatsAppManager = () => {
                 <i className="bi bi-whatsapp me-3"></i>
                 WhatsApp Message Manager
               </h2>
+              <p className="mb-0 mt-2">Direct WhatsApp integration - No external services needed!</p>
             </Card.Header>
             <Card.Body className="p-4">
               {alert.show && (
                 <Alert variant={alert.variant} dismissible onClose={() => setAlert({ show: false })}>
-                  {alert.message}
+                  <div style={{ whiteSpace: 'pre-line' }}>{alert.message}</div>
                 </Alert>
               )}
 
               <Tabs activeKey={activeTab} onSelect={(k) => setActiveTab(k)} className="mb-4">
-                <Tab eventKey="status" title={
-                  <span><i className="bi bi-wifi me-2"></i>Connection Status</span>
+                <Tab eventKey="setup" title={
+                  <span><i className="bi bi-gear me-2"></i>Setup & Status</span>
                 }>
                   <Row>
                     <Col lg={6}>
-                      <Card className="mb-4">
+                      <Card className="mb-4 border-success">
                         <Card.Header>
-                          <h5 className="mb-0">WhatsApp Connection</h5>
+                          <h5 className="mb-0 text-success">
+                            <i className="bi bi-whatsapp me-2"></i>
+                            WhatsApp Web Connection
+                          </h5>
                         </Card.Header>
                         <Card.Body>
                           <div className="d-flex justify-content-between align-items-center mb-3">
-                            <span>Status:</span>
+                            <span><strong>Status:</strong></span>
                             {getStatusBadge(whatsappStatus.status)}
                           </div>
                           
-                          <div className="d-flex justify-content-between align-items-center mb-3">
-                            <span>Ready:</span>
+                          <div className="d-flex justify-content-between align-items-center mb-4">
+                            <span><strong>Ready to Send:</strong></span>
                             <Badge bg={whatsappStatus.isReady ? 'success' : 'danger'}>
-                              {whatsappStatus.isReady ? 'Yes' : 'No'}
+                              {whatsappStatus.isReady ? 'Yes ✅' : 'No ❌'}
                             </Badge>
                           </div>
 
-                          <div className="d-flex gap-2">
+                          <Alert variant="info" className="mb-3">
+                            <h6><i className="bi bi-info-circle me-2"></i>How it works:</h6>
+                            <ol className="mb-0 ps-3">
+                              <li>Click "Connect WhatsApp Web"</li>
+                              <li>Scan the QR code with your phone</li>
+                              <li>Send verification code to yourself</li>
+                              <li>Start sending messages!</li>
+                            </ol>
+                          </Alert>
+
+                          <div className="d-grid gap-2">
                             {!whatsappStatus.isReady ? (
                               <Button 
                                 variant="success" 
-                                onClick={initializeWhatsApp}
+                                size="lg"
+                                onClick={initializeWhatsAppWeb}
                                 disabled={loading}
                               >
                                 {loading ? (
@@ -260,8 +323,8 @@ const WhatsAppManager = () => {
                                   </>
                                 ) : (
                                   <>
-                                    <i className="bi bi-power me-2"></i>
-                                    Connect WhatsApp
+                                    <i className="bi bi-whatsapp me-2"></i>
+                                    Connect WhatsApp Web
                                   </>
                                 )}
                               </Button>
@@ -272,66 +335,134 @@ const WhatsAppManager = () => {
                                 disabled={loading}
                               >
                                 <i className="bi bi-power me-2"></i>
-                                Disconnect
+                                Disconnect WhatsApp
                               </Button>
                             )}
-                            
-                            <Button 
-                              variant="outline-primary" 
-                              onClick={fetchWhatsAppStatus}
-                            >
-                              <i className="bi bi-arrow-clockwise me-2"></i>
-                              Refresh
-                            </Button>
                           </div>
                         </Card.Body>
                       </Card>
                     </Col>
 
                     <Col lg={6}>
-                      <Card>
+                      <Card className="mb-4 border-primary">
                         <Card.Header>
-                          <h5 className="mb-0">Auto Reminders</h5>
+                          <h5 className="mb-0 text-primary">
+                            <i className="bi bi-shield-check me-2"></i>
+                            Verification Setup
+                          </h5>
                         </Card.Header>
                         <Card.Body>
-                          <p className="text-muted mb-3">
-                            Automatic reminders are sent daily at 10:00 AM for fee payments 
-                            and at 9:00 AM for membership expiry (3 days before).
-                          </p>
-                          
-                          <div className="d-grid gap-2">
-                            <Button 
-                              variant="warning" 
-                              onClick={triggerAllFeeReminders}
-                              disabled={!whatsappStatus.isReady || loading}
-                            >
-                              <i className="bi bi-currency-rupee me-2"></i>
-                              Trigger Fee Reminders ({pendingPaymentCustomers.length})
-                            </Button>
-                            
-                            <Button 
-                              variant="info" 
-                              onClick={triggerExpiryReminders}
-                              disabled={!whatsappStatus.isReady || loading}
-                            >
-                              <i className="bi bi-calendar-x me-2"></i>
-                              Trigger Expiry Reminders
-                            </Button>
-                          </div>
+                          <Alert variant="warning" className="mb-3">
+                            <small>
+                              <strong>One-time setup:</strong> Enter your WhatsApp number to receive and verify codes.
+                            </small>
+                          </Alert>
+
+                          {verificationStep === 'phone' ? (
+                            <>
+                              <Form.Group className="mb-3">
+                                <Form.Label>Your WhatsApp Number</Form.Label>
+                                <InputGroup>
+                                  <InputGroup.Text>+92</InputGroup.Text>
+                                  <Form.Control
+                                    type="tel"
+                                    value={phoneNumber}
+                                    onChange={(e) => setPhoneNumber(e.target.value)}
+                                    placeholder="3001234567"
+                                    disabled={!whatsappStatus.isReady}
+                                  />
+                                </InputGroup>
+                                <Form.Text className="text-muted">
+                                  Enter without +92 (e.g., 3001234567)
+                                </Form.Text>
+                              </Form.Group>
+
+                              <Button
+                                variant="primary"
+                                onClick={requestWhatsAppVerification}
+                                disabled={!whatsappStatus.isReady || !phoneNumber || loading}
+                                className="w-100"
+                              >
+                                {loading ? (
+                                  <>
+                                    <Spinner size="sm" className="me-2" />
+                                    Sending to WhatsApp...
+                                  </>
+                                ) : (
+                                  <>
+                                    <i className="bi bi-send me-2"></i>
+                                    Send Verification to My WhatsApp
+                                  </>
+                                )}
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Alert variant="success" className="mb-3">
+                                <i className="bi bi-check-circle me-2"></i>
+                                Verification code sent to your WhatsApp: <strong>+92{phoneNumber}</strong>
+                              </Alert>
+
+                              <Form.Group className="mb-3">
+                                <Form.Label>Enter Verification Code</Form.Label>
+                                <Form.Control
+                                  type="text"
+                                  value={verificationCode}
+                                  onChange={(e) => setVerificationCode(e.target.value)}
+                                  placeholder="Enter 6-digit code"
+                                  maxLength="6"
+                                />
+                              </Form.Group>
+
+                              <div className="d-grid gap-2">
+                                <Button
+                                  variant="success"
+                                  onClick={verifyWhatsAppCode}
+                                  disabled={!verificationCode || loading}
+                                >
+                                  {loading ? (
+                                    <>
+                                      <Spinner size="sm" className="me-2" />
+                                      Verifying...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <i className="bi bi-shield-check me-2"></i>
+                                      Verify & Complete Setup
+                                    </>
+                                  )}
+                                </Button>
+                                
+                                <Button
+                                  variant="outline-secondary"
+                                  size="sm"
+                                  onClick={() => setVerificationStep('phone')}
+                                >
+                                  ← Back to Phone Number
+                                </Button>
+                              </div>
+                            </>
+                          )}
+
+                          {!whatsappStatus.isReady && (
+                            <Alert variant="warning" className="mt-3 mb-0">
+                              <small>Please connect WhatsApp Web first before verification</small>
+                            </Alert>
+                          )}
                         </Card.Body>
                       </Card>
                     </Col>
                   </Row>
                 </Tab>
 
-                <Tab eventKey="manual" title={
-                  <span><i className="bi bi-chat-dots me-2"></i>Manual Messages</span>
-                }>
+                <Tab eventKey="send" title={
+                  <span><i className="bi bi-chat-dots me-2"></i>Send Messages</span>
+                } disabled={!whatsappStatus.isReady}>
                   <Row>
                     <Col lg={8}>
                       <Card>
                         <Card.Header>
-                          <h5 className="mb-0">Send Custom Message</h5>
+                          <h5 className="mb-0">Send WhatsApp Message</h5>
                         </Card.Header>
                         <Card.Body>
                           <Form.Group className="mb-3">
@@ -343,37 +474,49 @@ const WhatsAppManager = () => {
                               <option value="">Choose customer...</option>
                               {customers.map(customer => (
                                 <option key={customer._id} value={customer._id}>
-                                  {customer.name} - {customer.phone} ({customer.rollNumber})
+                                  {customer.name} - {customer.phone || 'No phone'} ({customer.rollNumber})
                                 </option>
                               ))}
                             </Form.Select>
                           </Form.Group>
 
                           <Form.Group className="mb-3">
-                            <Form.Label>Message</Form.Label>
+                            <Form.Label>WhatsApp Message</Form.Label>
                             <Form.Control
                               as="textarea"
-                              rows={5}
+                              rows={6}
                               value={customMessage}
                               onChange={(e) => setCustomMessage(e.target.value)}
-                              placeholder="Enter your message here..."
+                              placeholder="Type your WhatsApp message here...
+                              
+You can use:
+*Bold text*
+_Italic text_
+~Strikethrough~
+
+🎉 Emojis work too!"
                             />
+                            <Form.Text className="text-muted">
+                              WhatsApp formatting: *bold*, _italic_, ~strikethrough~
+                            </Form.Text>
                           </Form.Group>
 
                           <Button
-                            variant="primary"
+                            variant="success"
+                            size="lg"
                             onClick={sendCustomMessage}
                             disabled={!whatsappStatus.isReady || loading}
+                            className="w-100"
                           >
                             {loading ? (
                               <>
                                 <Spinner size="sm" className="me-2" />
-                                Sending...
+                                Sending to WhatsApp...
                               </>
                             ) : (
                               <>
-                                <i className="bi bi-send me-2"></i>
-                                Send Message
+                                <i className="bi bi-whatsapp me-2"></i>
+                                Send WhatsApp Message
                               </>
                             )}
                           </Button>
@@ -382,29 +525,39 @@ const WhatsAppManager = () => {
                     </Col>
 
                     <Col lg={4}>
-                      <Card>
+                      <Card className="mb-3">
                         <Card.Header>
                           <h5 className="mb-0">Quick Actions</h5>
                         </Card.Header>
                         <Card.Body>
-                          <p className="text-muted mb-3">Send predefined messages to customers</p>
-                          
-                          <Form.Group className="mb-3">
-                            <Form.Label>Select Customer</Form.Label>
-                            <Form.Select
-                              value={selectedCustomer}
-                              onChange={(e) => setSelectedCustomer(e.target.value)}
-                            >
-                              <option value="">Choose customer...</option>
-                              {customers.map(customer => (
-                                <option key={customer._id} value={customer._id}>
-                                  {customer.name} ({customer.rollNumber})
-                                </option>
-                              ))}
-                            </Form.Select>
-                          </Form.Group>
-
                           <div className="d-grid gap-2">
+                            <Button
+                              variant="warning"
+                              onClick={triggerAllFeeReminders}
+                              disabled={!whatsappStatus.isReady || loading}
+                            >
+                              <i className="bi bi-currency-rupee me-2"></i>
+                              Send All Fee Reminders ({pendingPaymentCustomers.length})
+                            </Button>
+                            
+                            <hr />
+                            
+                            <Form.Group className="mb-3">
+                              <Form.Label>Individual Actions:</Form.Label>
+                              <Form.Select
+                                value={selectedCustomer}
+                                onChange={(e) => setSelectedCustomer(e.target.value)}
+                                size="sm"
+                              >
+                                <option value="">Choose customer...</option>
+                                {customers.map(customer => (
+                                  <option key={customer._id} value={customer._id}>
+                                    {customer.name} ({customer.rollNumber})
+                                  </option>
+                                ))}
+                              </Form.Select>
+                            </Form.Group>
+
                             <Button
                               variant="success"
                               size="sm"
@@ -416,7 +569,7 @@ const WhatsAppManager = () => {
                             </Button>
                             
                             <Button
-                              variant="warning"
+                              variant="outline-warning"
                               size="sm"
                               onClick={() => sendFeeReminder(selectedCustomer)}
                               disabled={!selectedCustomer || !whatsappStatus.isReady || loading}
@@ -432,11 +585,22 @@ const WhatsAppManager = () => {
                 </Tab>
 
                 <Tab eventKey="customers" title={
-                  <span><i className="bi bi-people me-2"></i>Customer List</span>
-                }>
+                  <span><i className="bi bi-people me-2"></i>Pending ({pendingPaymentCustomers.length})</span>
+                } disabled={!whatsappStatus.isReady}>
                   <Card>
                     <Card.Header>
-                      <h5 className="mb-0">Customers with Pending Payments ({pendingPaymentCustomers.length})</h5>
+                      <div className="d-flex justify-content-between align-items-center">
+                        <h5 className="mb-0">Customers with Pending Payments</h5>
+                        <Button
+                          variant="warning"
+                          size="sm"
+                          onClick={triggerAllFeeReminders}
+                          disabled={!whatsappStatus.isReady || loading || pendingPaymentCustomers.length === 0}
+                        >
+                          <i className="bi bi-whatsapp me-1"></i>
+                          Send All WhatsApp Reminders
+                        </Button>
+                      </div>
                     </Card.Header>
                     <Card.Body style={{ maxHeight: '500px', overflowY: 'auto' }}>
                       <ListGroup>
@@ -446,7 +610,7 @@ const WhatsAppManager = () => {
                               <strong>{customer.name}</strong> ({customer.rollNumber})
                               <br />
                               <small className="text-muted">
-                                Phone: {customer.phone} | Remaining: ₹{customer.remaining}
+                                📱 Phone: {customer.phone || 'No phone'} | 💰 Remaining: PKR {customer.remaining}
                               </small>
                             </div>
                             <div className="d-flex gap-1">
@@ -454,7 +618,8 @@ const WhatsAppManager = () => {
                                 variant="outline-success"
                                 size="sm"
                                 onClick={() => sendWelcomeMessage(customer._id)}
-                                disabled={!whatsappStatus.isReady || loading}
+                                disabled={!whatsappStatus.isReady || loading || !customer.phone}
+                                title="Welcome Message"
                               >
                                 <i className="bi bi-heart"></i>
                               </Button>
@@ -462,7 +627,8 @@ const WhatsAppManager = () => {
                                 variant="outline-warning"
                                 size="sm"
                                 onClick={() => sendFeeReminder(customer._id)}
-                                disabled={!whatsappStatus.isReady || loading}
+                                disabled={!whatsappStatus.isReady || loading || !customer.phone}
+                                title="Fee Reminder"
                               >
                                 <i className="bi bi-currency-rupee"></i>
                               </Button>
@@ -487,11 +653,11 @@ const WhatsAppManager = () => {
       </Row>
 
       {/* QR Code Modal */}
-      <Modal show={showQRModal} onHide={() => setShowQRModal(false)} centered>
+      <Modal show={showQRModal} onHide={() => setShowQRModal(false)} centered size="md">
         <Modal.Header closeButton>
           <Modal.Title>
             <i className="bi bi-qr-code me-2"></i>
-            Scan QR Code
+            Scan QR Code with WhatsApp
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="text-center">
@@ -501,15 +667,21 @@ const WhatsAppManager = () => {
                 src={whatsappStatus.qrCode} 
                 alt="WhatsApp QR Code" 
                 className="img-fluid mb-3"
-                style={{ maxWidth: '300px' }}
+                style={{ maxWidth: '300px', border: '2px solid #25D366', borderRadius: '10px' }}
               />
-              <p className="text-muted">
-                Open WhatsApp on your phone and scan this QR code to connect.
-              </p>
+              <Alert variant="success">
+                <h6><i className="bi bi-phone me-2"></i>Steps to connect:</h6>
+                <ol className="text-start mb-0">
+                  <li>Open WhatsApp on your phone</li>
+                  <li>Tap Menu (⋮) → Linked Devices</li>
+                  <li>Tap "Link a Device"</li>
+                  <li>Point your phone at this QR code</li>
+                </ol>
+              </Alert>
             </div>
           ) : (
             <div>
-              <Spinner animation="border" className="mb-3" />
+              <Spinner animation="border" size="lg" className="mb-3 text-success" />
               <p>Generating QR Code...</p>
             </div>
           )}
@@ -518,9 +690,9 @@ const WhatsAppManager = () => {
           <Button variant="secondary" onClick={() => setShowQRModal(false)}>
             Close
           </Button>
-          <Button variant="primary" onClick={fetchWhatsAppStatus}>
+          <Button variant="success" onClick={fetchWhatsAppStatus}>
             <i className="bi bi-arrow-clockwise me-2"></i>
-            Refresh
+            Refresh Status
           </Button>
         </Modal.Footer>
       </Modal>

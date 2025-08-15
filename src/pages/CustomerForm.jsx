@@ -12,7 +12,7 @@ const CustomerForm = () => {
     currentDate: new Date().toISOString().split('T')[0], // Auto set to today
     expiryDate: '',
     membership: '',
-    fee: '',
+    customFee: '',
     paidAmount: '',
     remaining: '',
     emergencyContact: {
@@ -25,83 +25,19 @@ const CustomerForm = () => {
   const [rollNumber, setRollNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
-  const [showSetCounterModal, setShowSetCounterModal] = useState(false);
-  const [newCounterValue, setNewCounterValue] = useState('');
 
-  const membershipFees = {
-    regular: 1200,
-    training: 5000,
-    premium: 8000
-  };
+  const membershipTypes = [
+    { value: 'regular', label: '💪 Regular Membership' },
+    { value: 'training', label: '🏋️ Training Membership' },
+    { value: 'premium', label: '👑 Premium Membership' },
+    { value: 'basic', label: '🔰 Basic Membership' },
+    { value: 'vip', label: '⭐ VIP Membership' },
+    { value: 'student', label: '🎓 Student Membership' }
+  ];
 
   useEffect(() => {
-    // Initialize counter to 505 if not set (since your last was GYM-0505)
-    initializeCounter();
-    fetchNextRollNumber();
+    resetCurrentDate();
   }, []);
-
-  // Local storage key for roll number counter
-  const ROLL_COUNTER_KEY = 'gym_roll_counter';
-
-  const initializeCounter = () => {
-    const currentCounter = localStorage.getItem(ROLL_COUNTER_KEY);
-    if (!currentCounter) {
-      // Set to 505 since your last roll number was GYM-0505
-      localStorage.setItem(ROLL_COUNTER_KEY, '505');
-    }
-  };
-
-  const getNextSequentialRollNumber = () => {
-    // Get current counter from localStorage
-    let counter = parseInt(localStorage.getItem(ROLL_COUNTER_KEY) || '505');
-    
-    // Generate roll number with next counter value
-    const nextCounter = counter + 1;
-    const rollNum = `GYM-${String(nextCounter).padStart(4, '0')}`;
-    
-    return { rollNum, nextCounter };
-  };
-
-  const incrementRollCounter = () => {
-    // Get current counter and increment it
-    let counter = parseInt(localStorage.getItem(ROLL_COUNTER_KEY) || '505');
-    counter += 1;
-    localStorage.setItem(ROLL_COUNTER_KEY, counter.toString());
-  };
-
-  const syncRollCounterWithServer = async (serverCount) => {
-    // Update local counter to match server count
-    localStorage.setItem(ROLL_COUNTER_KEY, serverCount.toString());
-  };
-
-  const fetchNextRollNumber = async () => {
-    try {
-      // Try to get count from server first
-      const response = await axios.get('https://new-backend-3-yxpd.onrender.com/api/customers/count', {
-        timeout: 5000 // 5 second timeout
-      });
-      
-      const serverCount = response.data.count;
-      const nextRollNumber = `GYM-${String(serverCount + 1).padStart(4, '0')}`;
-      
-      // Sync local counter with server
-      await syncRollCounterWithServer(serverCount);
-      
-      setRollNumber(nextRollNumber);
-      
-    } catch (error) {
-      console.error('Error fetching roll number from server:', error);
-      
-      // Fallback to local sequential counter
-      const { rollNum } = getNextSequentialRollNumber();
-      setRollNumber(rollNum);
-      
-      // Show warning about server connection
-      if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
-        showAlert('Warning: Server not connected. Using local sequential numbering.', 'warning');
-      }
-    }
-  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -118,6 +54,11 @@ const CustomerForm = () => {
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
+  };
+
+  const handleRollNumberChange = (e) => {
+    const value = e.target.value.replace(/[^0-9]/g, ''); // Only allow numbers
+    setRollNumber(value);
   };
 
   const handleJoinDateChange = (e) => {
@@ -147,15 +88,12 @@ const CustomerForm = () => {
     }
   };
 
-  const handleMembershipChange = (e) => {
-    const membership = e.target.value;
-    const fee = membershipFees[membership] || 0;
-    
+  const handleCustomFeeChange = (e) => {
+    const customFee = parseFloat(e.target.value) || 0;
     setFormData(prev => ({
       ...prev,
-      membership,
-      fee,
-      remaining: fee - (parseFloat(prev.paidAmount) || 0)
+      customFee,
+      remaining: customFee - (parseFloat(prev.paidAmount) || 0)
     }));
   };
 
@@ -164,7 +102,7 @@ const CustomerForm = () => {
     setFormData(prev => ({
       ...prev,
       paidAmount,
-      remaining: prev.fee - paidAmount
+      remaining: (prev.customFee || 0) - paidAmount
     }));
   };
 
@@ -216,7 +154,17 @@ const CustomerForm = () => {
     }
   };
 
-  const validateForm = () => {
+  const checkRollNumberExists = async (rollNum) => {
+    try {
+      const response = await axios.get(`https://amfitness.fun/api/customers/check-roll/${rollNum}`);
+      return response.data.exists;
+    } catch (error) {
+      console.error('Error checking roll number:', error);
+      return false;
+    }
+  };
+
+  const validateForm = async () => {
     // Check required fields
     if (!formData.name.trim()) {
       showAlert('Name is required', 'danger');
@@ -225,6 +173,16 @@ const CustomerForm = () => {
     
     if (!formData.phone.trim()) {
       showAlert('Phone number is required', 'danger');
+      return false;
+    }
+
+    if (!rollNumber.trim()) {
+      showAlert('Roll number is required', 'danger');
+      return false;
+    }
+
+    if (rollNumber.length < 1) {
+      showAlert('Roll number must be at least 1 digit', 'danger');
       return false;
     }
     
@@ -242,9 +200,26 @@ const CustomerForm = () => {
       showAlert('Please select a membership type', 'danger');
       return false;
     }
+
+    if (!formData.customFee || formData.customFee <= 0) {
+      showAlert('Please enter a valid membership fee', 'danger');
+      return false;
+    }
     
-    if (!formData.paidAmount || formData.paidAmount < 0) {
-      showAlert('Please enter a valid paid amount', 'danger');
+    if (formData.paidAmount < 0) {
+      showAlert('Paid amount cannot be negative', 'danger');
+      return false;
+    }
+
+    if (formData.paidAmount > formData.customFee) {
+      showAlert('Paid amount cannot be greater than total fee', 'danger');
+      return false;
+    }
+
+    // Check if roll number already exists
+    const rollExists = await checkRollNumberExists(rollNumber);
+    if (rollExists) {
+      showAlert(`Roll number ${rollNumber} already exists. Please choose a different number.`, 'danger');
       return false;
     }
     
@@ -267,7 +242,8 @@ const CustomerForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!validateForm()) {
+    const isValid = await validateForm();
+    if (!isValid) {
       return;
     }
     
@@ -288,14 +264,21 @@ const CustomerForm = () => {
     try {
       const submitData = new FormData();
       
-      // Add roll number to form data
+      // Add roll number to form data (just the number, server will format it)
       submitData.append('rollNumber', rollNumber);
       
-      Object.keys(formData).forEach(key => {
+      // Add custom fee instead of predefined fee
+      const dataToSubmit = {
+        ...formData,
+        fee: formData.customFee, // Use custom fee as the main fee
+        remaining: formData.customFee - (formData.paidAmount || 0)
+      };
+
+      Object.keys(dataToSubmit).forEach(key => {
         if (key === 'emergencyContact') {
-          submitData.append(key, JSON.stringify(formData[key]));
-        } else {
-          submitData.append(key, formData[key]);
+          submitData.append(key, JSON.stringify(dataToSubmit[key]));
+        } else if (key !== 'customFee') { // Don't send customFee separately
+          submitData.append(key, dataToSubmit[key]);
         }
       });
       
@@ -304,37 +287,25 @@ const CustomerForm = () => {
       }
 
       // Try to submit to server
-      await axios.post('https://new-backend-3-yxpd.onrender.com/api/customers', submitData, {
+      const response = await axios.post('https://amfitness.fun/api/customers', submitData, {
         timeout: 10000, // 10 second timeout
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
       
-      // If server submission successful, increment the counter
-      incrementRollCounter();
-      
       showAlert(`Customer added successfully with Roll Number: ${rollNumber}`, 'success');
       
-      // Reset form and get next roll number
+      // Reset form
       resetForm();
       
     } catch (error) {
       console.error('Submission error:', error);
       
       if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
-        // Even if server is down, we can still save locally and increment counter
-        showAlert(`Data saved locally with Roll Number: ${rollNumber}. Will sync when server is available.`, 'warning');
-        
-        // Store data locally as backup
-        saveDataLocally(rollNumber, formData);
-        
-        // Increment counter for next use
-        incrementRollCounter();
-        
-        // Reset form and get next roll number
-        resetForm();
-        
+        showAlert(`Server connection failed. Please check your connection and try again.`, 'warning');
+      } else if (error.response?.status === 400 && error.response?.data?.error?.includes('duplicate')) {
+        showAlert('This roll number already exists. Please choose a different number.', 'danger');
       } else if (error.response) {
         showAlert('Error adding customer: ' + (error.response?.data?.error || error.response?.data?.message || 'Unknown server error'), 'danger');
       } else {
@@ -342,23 +313,6 @@ const CustomerForm = () => {
       }
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Save data locally when server is unavailable
-  const saveDataLocally = (rollNum, data) => {
-    try {
-      const localData = JSON.parse(localStorage.getItem('gym_offline_data') || '[]');
-      const newEntry = {
-        rollNumber: rollNum,
-        ...data,
-        timestamp: new Date().toISOString(),
-        status: 'pending_sync'
-      };
-      localData.push(newEntry);
-      localStorage.setItem('gym_offline_data', JSON.stringify(localData));
-    } catch (error) {
-      console.error('Error saving data locally:', error);
     }
   };
 
@@ -372,14 +326,14 @@ const CustomerForm = () => {
       currentDate: new Date().toISOString().split('T')[0],
       expiryDate: '',
       membership: '',
-      fee: '',
+      customFee: '',
       paidAmount: '',
       remaining: '',
       emergencyContact: { name: '', phone: '' }
     });
     setImage(null);
     setPreview('');
-    fetchNextRollNumber();
+    setRollNumber('');
   };
 
   const resetCurrentDate = () => {
@@ -392,44 +346,12 @@ const CustomerForm = () => {
   const testServerConnection = async () => {
     try {
       setLoading(true);
-      await axios.get('https://new-backend-3-yxpd.onrender.com/api/health', { timeout: 5000 });
+      await axios.get('https://amfitness.fun/api/health', { timeout: 5000 });
       showAlert('Server connection successful!', 'success');
-      // Refresh roll number from server
-      fetchNextRollNumber();
     } catch (error) {
-      showAlert('Server connection failed. Using local sequential numbering.', 'warning');
+      showAlert('Server connection failed. Please check if the server is running.', 'danger');
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Set custom counter value
-  const handleSetCounter = () => {
-    const value = parseInt(newCounterValue);
-    if (isNaN(value) || value < 0) {
-      showAlert('Please enter a valid number', 'danger');
-      return;
-    }
-    
-    localStorage.setItem(ROLL_COUNTER_KEY, value.toString());
-    setShowSetCounterModal(false);
-    setNewCounterValue('');
-    fetchNextRollNumber();
-    showAlert(`Roll number counter set to ${value}. Next roll number will be GYM-${String(value + 1).padStart(4, '0')}`, 'success');
-  };
-
-  // Get current counter value
-  const getCurrentCounter = () => {
-    return parseInt(localStorage.getItem(ROLL_COUNTER_KEY) || '505');
-  };
-
-  // Show local data count
-  const getLocalDataCount = () => {
-    try {
-      const localData = JSON.parse(localStorage.getItem('gym_offline_data') || '[]');
-      return localData.length;
-    } catch {
-      return 0;
     }
   };
 
@@ -444,7 +366,7 @@ const CustomerForm = () => {
                 <i className="bi bi-person-plus-fill me-3"></i>
                 Add New Member
               </h2>
-              {/* Server Connection and Admin Controls */}
+              {/* Server Connection Control */}
               <div className="mt-3">
                 <Button 
                   variant="outline-light" 
@@ -456,23 +378,6 @@ const CustomerForm = () => {
                   <i className="bi bi-wifi me-1"></i>
                   Test Server
                 </Button>
-                
-                <Button 
-                  variant="outline-warning" 
-                  size="sm" 
-                  onClick={() => setShowSetCounterModal(true)}
-                  className="me-2"
-                  disabled={loading}
-                >
-                  <i className="bi bi-gear me-1"></i>
-                  Set Counter
-                </Button>
-                
-                {getLocalDataCount() > 0 && (
-                  <Badge bg="warning" className="ms-2">
-                    {getLocalDataCount()} offline records
-                  </Badge>
-                )}
               </div>
             </Card.Header>
             <Card.Body className="p-5">
@@ -489,18 +394,20 @@ const CustomerForm = () => {
                   <Col md={6}>
                     <Form.Group>
                       <Form.Label className="fw-semibold text-primary">
-                        <i className="bi bi-hash me-2"></i>Roll Number
+                        <i className="bi bi-hash me-2"></i>Roll Number *
                       </Form.Label>
                       <Form.Control
                         type="text"
                         value={rollNumber}
-                        readOnly
-                        className="bg-light fw-bold text-success"
-                        style={{ fontSize: '1.3rem' }}
+                        onChange={handleRollNumberChange}
+                        placeholder="Enter roll number (e.g., 456, 111)"
+                        required
+                        className="fw-bold"
+                        style={{ fontSize: '1.2rem' }}
                       />
                       <Form.Text className="text-muted">
                         <i className="bi bi-info-circle me-1"></i>
-                        Current sequence: {getCurrentCounter()} → Next: {getCurrentCounter() + 1}
+                        Enter any number (e.g., 456, 111, 1001). Only numbers allowed.
                       </Form.Text>
                     </Form.Group>
                   </Col>
@@ -529,28 +436,18 @@ const CustomerForm = () => {
                   </Col>
                 </Row>
 
-                {/* Counter Status Alert */}
-                <Alert variant="info" className="mb-4">
-                  <Row className="align-items-center">
-                    <Col>
-                      <strong><i className="bi bi-info-circle me-2"></i>Roll Number Status:</strong>
-                      <br />
-                      Current Counter: <Badge bg="primary">GYM-{String(getCurrentCounter()).padStart(4, '0')}</Badge>
-                      <br />
-                      Next Roll Number: <Badge bg="success">{rollNumber}</Badge>
-                    </Col>
-                    <Col xs="auto">
-                      <Button 
-                        variant="outline-primary" 
-                        size="sm"
-                        onClick={() => setShowSetCounterModal(true)}
-                      >
-                        <i className="bi bi-pencil me-1"></i>
-                        Adjust Counter
-                      </Button>
-                    </Col>
-                  </Row>
-                </Alert>
+                {/* Roll Number Preview */}
+                {rollNumber && (
+                  <Alert variant="info" className="mb-4">
+                    <Row className="align-items-center">
+                      <Col>
+                        <strong><i className="bi bi-eye me-2"></i>Roll Number Preview:</strong>
+                        <br />
+                        Final Roll Number: <Badge bg="success" className="fs-6">GYM-{String(rollNumber).padStart(4, '0')}</Badge>
+                      </Col>
+                    </Row>
+                  </Alert>
+                )}
 
                 {/* Personal Information */}
                 <Card className="mb-4 border-0 shadow-sm">
@@ -756,15 +653,21 @@ const CustomerForm = () => {
                           <Form.Select
                             name="membership"
                             value={formData.membership}
-                            onChange={handleMembershipChange}
+                            onChange={handleInputChange}
                             required
                             className="rounded-3"
                           >
                             <option value="">Select Membership Plan</option>
-                            <option value="regular">💪 Regular - PKR 1,200/month</option>
-                            <option value="training">🏋️ Training - PKR 5,000/month</option>
-                            <option value="premium">👑 Premium - PKR 8,000/month</option>
+                            {membershipTypes.map((type) => (
+                              <option key={type.value} value={type.value}>
+                                {type.label}
+                              </option>
+                            ))}
                           </Form.Select>
+                          <Form.Text className="text-muted">
+                            <i className="bi bi-info-circle me-1"></i>
+                            Choose the type of membership for this customer
+                          </Form.Text>
                         </Form.Group>
                       </Col>
                     </Row>
@@ -783,16 +686,24 @@ const CustomerForm = () => {
                       <Col md={4}>
                         <Form.Group className="mb-3">
                           <Form.Label className="fw-semibold">
-                            <i className="bi bi-currency-dollar me-1"></i>Total Fee (PKR)
+                            <i className="bi bi-currency-dollar me-1"></i>Membership Fee (PKR) *
                           </Form.Label>
                           <Form.Control
                             type="number"
-                            name="fee"
-                            value={formData.fee}
-                            readOnly
-                            className="bg-light fw-bold text-success rounded-3"
+                            name="customFee"
+                            value={formData.customFee}
+                            onChange={handleCustomFeeChange}
+                            required
+                            min="0"
+                            step="0.01"
+                            placeholder="Enter membership fee"
+                            className="fw-bold rounded-3"
                             style={{ fontSize: '1.1rem' }}
                           />
+                          <Form.Text className="text-muted">
+                            <i className="bi bi-info-circle me-1"></i>
+                            Enter the custom membership fee for this customer
+                          </Form.Text>
                         </Form.Group>
                       </Col>
                       <Col md={4}>
@@ -807,7 +718,8 @@ const CustomerForm = () => {
                             onChange={handlePaidAmountChange}
                             required
                             min="0"
-                            max={formData.fee}
+                            max={formData.customFee}
+                            step="0.01"
                             placeholder="0"
                             className="rounded-3"
                           />
@@ -831,7 +743,7 @@ const CustomerForm = () => {
                     </Row>
 
                     {/* Payment Status */}
-                    {formData.fee > 0 && (
+                    {formData.customFee > 0 && (
                       <Alert variant={formData.remaining > 0 ? 'warning' : 'success'} className="mt-3">
                         <Row className="align-items-center">
                           <Col>
@@ -847,9 +759,9 @@ const CustomerForm = () => {
                               <div 
                                 className="progress-bar bg-success" 
                                 role="progressbar" 
-                                style={{ width: `${((formData.paidAmount / formData.fee) * 100) || 0}%` }}
+                                style={{ width: `${((formData.paidAmount / formData.customFee) * 100) || 0}%` }}
                               >
-                                {Math.round(((formData.paidAmount / formData.fee) * 100) || 0)}%
+                                {Math.round(((formData.paidAmount / formData.customFee) * 100) || 0)}%
                               </div>
                             </div>
                           </Col>
@@ -946,48 +858,6 @@ const CustomerForm = () => {
           </Card>
         </Col>
       </Row>
-
-      {/* Set Counter Modal */}
-      <Modal show={showSetCounterModal} onHide={() => setShowSetCounterModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <i className="bi bi-gear me-2"></i>
-            Set Roll Number Counter
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <p className="text-muted">
-            Current counter is at <strong>GYM-{String(getCurrentCounter()).padStart(4, '0')}</strong>.
-            <br />
-            Set the counter to continue from your desired number.
-          </p>
-          <Form.Group>
-            <Form.Label className="fw-semibold">
-              Set Counter Value:
-            </Form.Label>
-            <Form.Control
-              type="number"
-              value={newCounterValue}
-              onChange={(e) => setNewCounterValue(e.target.value)}
-              placeholder={`Enter number (current: ${getCurrentCounter()})`}
-              min="0"
-              className="rounded-3"
-            />
-            <Form.Text className="text-muted">
-              Example: Enter 505 to continue from GYM-0506
-            </Form.Text>
-          </Form.Group>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowSetCounterModal(false)}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleSetCounter}>
-            <i className="bi bi-check me-1"></i>
-            Set Counter
-          </Button>
-        </Modal.Footer>
-      </Modal>
     </Container>
   );
 };
