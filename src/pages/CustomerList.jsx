@@ -40,7 +40,7 @@ const CustomerList = () => {
   const fetchCustomers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/customers`);
+      const response = await axios.get(`https://backend-deploy-ten-pi.vercel.app/api/customers`);
       setCustomers(response.data);
     } catch (error) {
       console.error('Error fetching customers:', error);
@@ -54,7 +54,7 @@ const CustomerList = () => {
     e.stopPropagation();
     if (window.confirm('Are you sure you want to delete this member?')) {
       try {
-        const response = await axios.delete(`${import.meta.env.VITE_API_URL}/api/customers/${customerId}`);
+        const response = await axios.delete(`https://backend-deploy-ten-pi.vercel.app/api/customers/${customerId}`);
         if (response.status === 200) {
           setCustomers(customers.filter((customer) => customer._id !== customerId));
           
@@ -139,7 +139,7 @@ const CustomerList = () => {
       }
 
       const response = await axios.put(
-        `${import.meta.env.VITE_API_URL}/api/customers/${editingCustomer._id}`,
+        `https://backend-deploy-ten-pi.vercel.app/api/customers/${editingCustomer._id}`,
         formData,
         {
           headers: {
@@ -221,9 +221,9 @@ const CustomerList = () => {
     if (imagePath.startsWith('http')) {
       return imagePath; // Full URL
     } else if (imagePath.startsWith('uploads/')) {
-      return `${import.meta.env.VITE_API_URL}/${imagePath}`; // Path with uploads/
+      return `https://backend-deploy-ten-pi.vercel.app/${imagePath}`; // Path with uploads/
     } else {
-      return `${import.meta.env.VITE_API_URL}/uploads/${imagePath}`; // Just filename
+      return `https://backend-deploy-ten-pi.vercel.app/uploads/${imagePath}`; // Just filename
     }
   };
 

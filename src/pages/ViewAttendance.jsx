@@ -43,8 +43,8 @@ const ViewAttendance = () => {
     setLoading(true);
     try {
       const [attendanceRes, customersRes] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_API_URL}/api/attendance`),
-        axios.get(`${import.meta.env.VITE_API_URL}/api/customers`)
+        axios.get(`https://backend-deploy-ten-pi.vercel.app/api/attendance`),
+        axios.get(`https://backend-deploy-ten-pi.vercel.app/api/customers`)
       ]);
       
       setAttendance(attendanceRes.data);
@@ -90,9 +90,9 @@ const ViewAttendance = () => {
     if (imagePath.startsWith('http')) {
       return imagePath; // Full URL
     } else if (imagePath.startsWith('uploads/')) {
-      return `${import.meta.env.VITE_API_URL}/${imagePath}`; // Path with uploads/
+      return `https://backend-deploy-ten-pi.vercel.app/${imagePath}`; // Path with uploads/
     } else {
-      return `${import.meta.env.VITE_API_URL}/uploads/${imagePath}`; // Just filename
+      return `https://backend-deploy-ten-pi.vercel.app/uploads/${imagePath}`; // Just filename
     }
   };
 
@@ -170,7 +170,7 @@ const ViewAttendance = () => {
         const worksheet = workbook.Sheets[workbook.SheetNames[0]];
         const importedData = XLSX.utils.sheet_to_json(worksheet);
 
-        await axios.post(`${import.meta.env.VITE_API_URL}/api/attendance/import`, {
+        await axios.post(`https://backend-deploy-ten-pi.vercel.app/api/attendance/import`, {
         });
         
         showAlert("Data imported successfully!", "success");

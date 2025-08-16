@@ -86,7 +86,7 @@ const MarkAttendance = () => {
   const fetchCustomers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/customers`);
+      const response = await axios.get(`https://backend-deploy-ten-pi.vercel.app/api/customers`);
       const customersData = response.data.map(customer => ({
         ...customer,
         status: getCustomerStatus(customer),
@@ -107,7 +107,7 @@ const MarkAttendance = () => {
   const fetchTodayAttendance = async () => {
     try {
       const today = new Date().toISOString().split('T')[0];
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/attendance?date=${today}`);
+      const response = await axios.get(`https://backend-deploy-ten-pi.vercel.app/api/attendance?date=${today}`);
       setTodayAttendance(response.data);
       
       const stats = {
@@ -242,7 +242,7 @@ const MarkAttendance = () => {
     setAttendanceLoading(prev => ({ ...prev, [customer._id]: true }));
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/attendance`, {
+      const response = await axios.post(`https://backend-deploy-ten-pi.vercel.app/api/attendance`, {
         customerId: customer._id
       });
       
@@ -274,7 +274,7 @@ const MarkAttendance = () => {
 
     setLoading(true);
     try {
-      await axios.put(`${import.meta.env.VITE_API_URL}/api/customers/${selectedCustomer._id}/payment`, {
+      await axios.put(`https://backend-deploy-ten-pi.vercel.app/api/customers/${selectedCustomer._id}/payment`, {
         amount: parseFloat(paymentAmount)
       });
       showAlert(`Payment of RS${paymentAmount} recorded for ${selectedCustomer.name}`, 'success');
@@ -356,7 +356,7 @@ const MarkAttendance = () => {
         durationType: renewalData.durationType
       };
 
-      await axios.put(`${import.meta.env.VITE_API_URL}/api/customers/${selectedCustomer._id}/renew`, renewalPayload);
+      await axios.put(`https://backend-deploy-ten-pi.vercel.app/api/customers/${selectedCustomer._id}/renew`, renewalPayload);
       
       showAlert(`Membership renewed successfully for ${selectedCustomer.name}`, 'success');
       setShowRenewalModal(false);
@@ -609,7 +609,7 @@ const MarkAttendance = () => {
                         <div className="member-avatar">
                           {customer.image ? (
                             <img
-                              src={`${import.meta.env.VITE_API_URL}/uploads/${customer.image}`}
+                              src={`https://backend-deploy-ten-pi.vercel.app/uploads/${customer.image}`}
                               alt={customer.name}
                               className="rounded-circle"
                               onError={(e) => {
@@ -795,7 +795,7 @@ const MarkAttendance = () => {
                           <div className="member-avatar-small me-3">
                             {customer.image ? (
                               <img
-                                src={`${import.meta.env.VITE_API_URL}/uploads/${customer.image}`}
+                                src={`https://backend-deploy-ten-pi.vercel.app/uploads/${customer.image}`}
                                 alt={customer.name}
                                 className="rounded-circle"
                               />
@@ -891,7 +891,7 @@ const MarkAttendance = () => {
                           <div className="member-avatar-small me-3">
                             {customer.image ? (
                               <img
-                                src={`${import.meta.env.VITE_API_URL}/uploads/${customer.image}`}
+                                src={`https://backend-deploy-ten-pi.vercel.app/uploads/${customer.image}`}
                                 alt={customer.name}
                                 className="rounded-circle"
                               />
@@ -990,7 +990,7 @@ const MarkAttendance = () => {
                           <div className="member-avatar-small me-3">
                             {customer.image ? (
                               <img
-                                src={`${import.meta.env.VITE_API_URL}/uploads/${customer.image}`}
+                                src={`https://backend-deploy-ten-pi.vercel.app/uploads/${customer.image}`}
                                 alt={customer.name}
                                 className="rounded-circle"
                               />
@@ -1071,7 +1071,7 @@ const MarkAttendance = () => {
                 <div className="member-avatar-large">
                   {selectedCustomer.image ? (
                     <img
-                      src={`${import.meta.env.VITE_API_URL}/uploads/${selectedCustomer.image}`}
+                      src={`https://backend-deploy-ten-pi.vercel.app/uploads/${selectedCustomer.image}`}
                       alt={selectedCustomer.name}
                       className="rounded-circle"
                     />
@@ -1172,7 +1172,7 @@ const MarkAttendance = () => {
                   <div className="member-avatar-large">
                     {selectedCustomer.image ? (
                       <img
-                        src={`${import.meta.env.VITE_API_URL}/uploads/${selectedCustomer.image}`}
+                        src={`https://backend-deploy-ten-pi.vercel.app/uploads/${selectedCustomer.image}`}
                         alt={selectedCustomer.name}
                         className="rounded-circle"
                       />
